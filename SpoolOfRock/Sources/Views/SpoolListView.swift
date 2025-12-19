@@ -7,6 +7,7 @@ struct SpoolListView: View {
     @State private var navigationPath = NavigationPath()
     @State private var showingUnknownTagAlert = false
     @State private var scannedUnknownTagID: UUID?
+    @State private var isBackgroundReadingActive = false
 
     private var spools: [Spool] {
         repository?.spools ?? []
@@ -36,6 +37,19 @@ struct SpoolListView: View {
             .sheet(isPresented: $showingAddSpool) {
                 AddSpoolView()
             }
+            .onChange(of: showingAddSpool) { _, isShowing in
+                if isShowing {
+                    // Pause background reading when Add Spool sheet appears
+                    nfcManager?.stopBackgroundReading()
+                    isBackgroundReadingActive = false
+                } else {
+                    // Resume background reading when sheet is dismissed
+                    if !isBackgroundReadingActive {
+                        startBackgroundNFCReading()
+                        isBackgroundReadingActive = true
+                    }
+                }
+            }
             .overlay {
                 if spools.isEmpty {
                     ContentUnavailableView(
@@ -46,10 +60,14 @@ struct SpoolListView: View {
                 }
             }
             .onAppear {
-                startBackgroundNFCReading()
+                if !isBackgroundReadingActive {
+                    startBackgroundNFCReading()
+                    isBackgroundReadingActive = true
+                }
             }
             .onDisappear {
                 nfcManager?.stopBackgroundReading()
+                isBackgroundReadingActive = false
             }
             .alert("Unknown NFC Tag", isPresented: $showingUnknownTagAlert) {
                 Button("Create New Spool") {

@@ -3,15 +3,12 @@ import SwiftUI
 struct AddSpoolView: View {
     @Environment(\.spoolRepository) private var repository
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.nfcManager) private var nfcManager
 
     @State private var manufacturer = ""
     @State private var selectedType: FilamentType = .pla
     @State private var color = ""
     @State private var originalWeight = ""
     @State private var currentWeight = ""
-    @State private var scannedTagID: String?
-    @State private var showingError = false
 
     var body: some View {
         NavigationStack {
@@ -36,32 +33,10 @@ struct AddSpoolView: View {
                         .keyboardType(.decimalPad)
                 }
 
-                if let nfcManager = nfcManager, nfcManager.isNFCAvailable {
-                    Section("NFC Tag (Optional)") {
-                        if scannedTagID != nil {
-                            Label("Tag Ready to Assign", systemImage: "checkmark.circle.fill")
-                                .foregroundStyle(.green)
-                        }
-
-                        Button {
-                            Task {
-                                if let tagID = await nfcManager.readTag() {
-                                    scannedTagID = tagID.uuidString
-                                } else if nfcManager.error != nil {
-                                    showingError = true
-                                }
-                            }
-                        } label: {
-                            HStack {
-                                Label("Scan NFC Tag", systemImage: "wave.3.right")
-                                if nfcManager.isReading {
-                                    Spacer()
-                                    ProgressView()
-                                }
-                            }
-                        }
-                        .disabled(nfcManager.isReading)
-                    }
+                Section {
+                    Text("💡 You can assign an NFC tag after creating the spool")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
             .navigationTitle("Add Spool")
@@ -76,13 +51,6 @@ struct AddSpoolView: View {
                     }
                     .disabled(!isValidInput)
                 }
-            }
-            .alert("NFC Error", isPresented: $showingError, presenting: nfcManager?.error) { _ in
-                Button("OK") {
-                    nfcManager?.clearError()
-                }
-            } message: { error in
-                Text(error.localizedDescription)
             }
         }
     }
@@ -106,9 +74,6 @@ struct AddSpoolView: View {
             originalWeight: original,
             currentWeight: current
         )
-
-        // Assign NFC tag if one was scanned
-        newSpool.nfcTagIdentifier = scannedTagID
 
         repository?.add(newSpool)
         dismiss()

@@ -3,13 +3,13 @@ import SwiftData
 
 @Model
 final class Spool {
-    var id: UUID
-    var manufacturer: String
-    var type: FilamentType
+    var id: UUID = UUID()
+    var manufacturer: String = ""
+    var type: FilamentType = FilamentType.pla
     var color: String = ""
-    var originalWeight: Double // in grams
-    var currentWeight: Double // in grams
-    var createdAt: Date
+    var originalWeight: Double = 0 // in grams
+    var currentWeight: Double = 0 // in grams
+    var createdAt: Date = Date()
     var nfcTagIdentifier: String? = nil
 
     init(manufacturer: String, type: FilamentType, color: String, originalWeight: Double, currentWeight: Double) {

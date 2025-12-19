@@ -9,30 +9,24 @@ struct SpoolOfRockApp: App {
 
     init() {
         do {
-            // Schema with models - SwiftData handles lightweight migration automatically
-            let schema = Schema([
-                Spool.self,
-            ])
-
             #if targetEnvironment(simulator)
             // For simulator: use local storage without CloudKit syncing
             let modelConfiguration = ModelConfiguration(
-                schema: schema,
                 isStoredInMemoryOnly: false,
                 cloudKitDatabase: .none
             )
             #else
             // For real devices: enable CloudKit syncing
             let modelConfiguration = ModelConfiguration(
-                schema: schema,
                 isStoredInMemoryOnly: false,
                 cloudKitDatabase: .automatic
             )
             #endif
 
+            // Use the latest schema version - SwiftData handles lightweight migration automatically
             modelContainer = try ModelContainer(
-                for: schema,
-                configurations: [modelConfiguration]
+                for: Spool.self,
+                configurations: modelConfiguration
             )
 
             // Create repository with SwiftData implementation

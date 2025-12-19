@@ -11,13 +11,19 @@ let project = Project(
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchScreen": [:],
-                    "NFCReaderUsageDescription": "SpoolOfRock uses NFC to identify and track your filament spools"
+                    "NFCReaderUsageDescription": "SpoolOfRock uses NFC to identify and track your filament spools",
+                    "UIBackgroundModes": ["remote-notification"]
                 ]
             ),
             sources: ["SpoolOfRock/Sources/**"],
             resources: ["SpoolOfRock/Resources/**"],
             entitlements: "SpoolOfRock/SpoolOfRock.entitlements",
-            dependencies: []
+            dependencies: [],
+            settings: .settings(
+                base: [
+                    "DEVELOPMENT_TEAM": "[TEAM_ID]"
+                ]
+            )
         ),
         .target(
             name: "SpoolOfRockTests",
