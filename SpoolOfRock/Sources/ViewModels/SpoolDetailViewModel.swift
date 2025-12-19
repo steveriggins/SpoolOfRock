@@ -12,6 +12,7 @@ final class SpoolDetailViewModel {
 
     var manufacturer: String { spool.manufacturer }
     var type: FilamentType { spool.type }
+    var color: String { spool.color }
     var originalWeight: Double { spool.originalWeight }
 
     var remainingPercentage: Double {

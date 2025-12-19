@@ -21,6 +21,7 @@ final class SpoolRepositoryTests: XCTestCase {
         let spool = Spool(
             manufacturer: "TestCo",
             type: .pla,
+            color: "Red",
             originalWeight: 1000,
             currentWeight: 800
         )
@@ -43,6 +44,7 @@ final class SpoolRepositoryTests: XCTestCase {
         let spool = Spool(
             manufacturer: "TestCo",
             type: .pla,
+            color: "Blue",
             originalWeight: 1000,
             currentWeight: 800
         )
@@ -64,6 +66,7 @@ final class SpoolRepositoryTests: XCTestCase {
         let spool = Spool(
             manufacturer: "TestCo",
             type: .pla,
+            color: "Green",
             originalWeight: 1000,
             currentWeight: 800
         )
@@ -82,8 +85,8 @@ final class SpoolRepositoryTests: XCTestCase {
 
     func testDeleteAtOffsets() async throws {
         // Given
-        let spool1 = Spool(manufacturer: "Test1", type: .pla, originalWeight: 1000, currentWeight: 800)
-        let spool2 = Spool(manufacturer: "Test2", type: .petg, originalWeight: 1000, currentWeight: 600)
+        let spool1 = Spool(manufacturer: "Test1", type: .pla, color: "Yellow", originalWeight: 1000, currentWeight: 800)
+        let spool2 = Spool(manufacturer: "Test2", type: .petg, color: "Orange", originalWeight: 1000, currentWeight: 600)
         repository.add(spool1)
         repository.add(spool2)
         try await Task.sleep(nanoseconds: 100_000_000)
@@ -100,9 +103,9 @@ final class SpoolRepositoryTests: XCTestCase {
 
     func testSpoolsSortedByCreationDate() async throws {
         // Given
-        let spool1 = Spool(manufacturer: "First", type: .pla, originalWeight: 1000, currentWeight: 800)
+        let spool1 = Spool(manufacturer: "First", type: .pla, color: "Black", originalWeight: 1000, currentWeight: 800)
         try await Task.sleep(nanoseconds: 10_000_000) // Small delay
-        let spool2 = Spool(manufacturer: "Second", type: .petg, originalWeight: 1000, currentWeight: 600)
+        let spool2 = Spool(manufacturer: "Second", type: .petg, color: "White", originalWeight: 1000, currentWeight: 600)
 
         // When
         repository.add(spool1)

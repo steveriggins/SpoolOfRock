@@ -2,24 +2,30 @@ import SwiftUI
 
 struct SpoolDetailView: View {
     @Environment(\.spoolRepository) private var repository
-    @State private var viewModel: SpoolDetailViewModel?
 
     let spool: Spool
 
     var body: some View {
-        Group {
-            if let viewModel = viewModel {
-                DetailContent(viewModel: viewModel)
+        if let repository = repository {
+            DetailContentContainer(spool: spool, repository: repository)
+        } else {
+            Text("Repository not available")
+        }
+    }
+}
+
+private struct DetailContentContainer: View {
+    @State private var viewModel: SpoolDetailViewModel
+
+    init(spool: Spool, repository: SpoolRepository) {
+        _viewModel = State(initialValue: SpoolDetailViewModel(spool: spool, repository: repository))
+    }
+
+    var body: some View {
+        DetailContent(viewModel: viewModel)
+            .onDisappear {
+                viewModel.save()
             }
-        }
-        .onAppear {
-            if let repository = repository, viewModel == nil {
-                viewModel = SpoolDetailViewModel(spool: spool, repository: repository)
-            }
-        }
-        .onDisappear {
-            viewModel?.save()
-        }
     }
 }
 
@@ -31,6 +37,7 @@ private struct DetailContent: View {
             Section("Information") {
                 LabeledContent("Manufacturer", value: viewModel.manufacturer)
                 LabeledContent("Type", value: viewModel.type.displayName)
+                LabeledContent("Color", value: viewModel.color)
             }
 
             Section("Weight") {

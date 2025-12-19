@@ -9,6 +9,13 @@ struct SpoolRowView: View {
             HStack {
                 Text(spool.manufacturer)
                     .font(.headline)
+                if !spool.color.isEmpty {
+                    Text("•")
+                        .foregroundStyle(.secondary)
+                    Text(spool.color)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
                 Spacer()
                 Text(spool.type.displayName)
                     .font(.subheadline)

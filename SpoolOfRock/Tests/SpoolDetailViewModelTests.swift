@@ -10,6 +10,7 @@ final class SpoolDetailViewModelTests: XCTestCase {
         spool = Spool(
             manufacturer: "TestCo",
             type: .pla,
+            color: "Purple",
             originalWeight: 1000,
             currentWeight: 800
         )
@@ -30,6 +31,7 @@ final class SpoolDetailViewModelTests: XCTestCase {
         // Then
         XCTAssertEqual(viewModel.manufacturer, "TestCo")
         XCTAssertEqual(viewModel.type, .pla)
+        XCTAssertEqual(viewModel.color, "Purple")
         XCTAssertEqual(viewModel.originalWeight, 1000)
         XCTAssertEqual(viewModel.currentWeight, 800)
     }
@@ -53,6 +55,7 @@ final class SpoolDetailViewModelTests: XCTestCase {
         let zeroSpool = Spool(
             manufacturer: "Zero",
             type: .pla,
+            color: "Clear",
             originalWeight: 0,
             currentWeight: 0
         )
@@ -86,6 +89,7 @@ final class SpoolDetailViewModelTests: XCTestCase {
         // Then - read-only properties unchanged
         XCTAssertEqual(viewModel.manufacturer, "TestCo")
         XCTAssertEqual(viewModel.type, .pla)
+        XCTAssertEqual(viewModel.color, "Purple")
         XCTAssertEqual(viewModel.originalWeight, 1000)
     }
 }

@@ -6,6 +6,7 @@ struct AddSpoolView: View {
 
     @State private var manufacturer = ""
     @State private var selectedType: FilamentType = .pla
+    @State private var color = ""
     @State private var originalWeight = ""
     @State private var currentWeight = ""
 
@@ -20,6 +21,8 @@ struct AddSpoolView: View {
                             Text(type.displayName).tag(type)
                         }
                     }
+
+                    TextField("Color", text: $color)
                 }
 
                 Section("Weight (grams)") {
@@ -61,6 +64,7 @@ struct AddSpoolView: View {
         let newSpool = Spool(
             manufacturer: manufacturer,
             type: selectedType,
+            color: color,
             originalWeight: original,
             currentWeight: current
         )
