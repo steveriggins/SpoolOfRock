@@ -2,15 +2,11 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Text("SpoolOfRock")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-        }
-        .padding()
+        SpoolListView()
     }
 }
 
 #Preview {
     ContentView()
+        .modelContainer(for: Spool.self, inMemory: true)
 }

@@ -15,6 +15,7 @@ let project = Project(
             ),
             sources: ["SpoolOfRock/Sources/**"],
             resources: ["SpoolOfRock/Resources/**"],
+            entitlements: "SpoolOfRock/SpoolOfRock.entitlements",
             dependencies: []
         ),
         .target(
