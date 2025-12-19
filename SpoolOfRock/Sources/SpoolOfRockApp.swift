@@ -11,11 +11,21 @@ struct SpoolOfRockApp: App {
                 Spool.self,
             ])
 
+            #if targetEnvironment(simulator)
+            // For simulator: use local storage without CloudKit syncing
+            let modelConfiguration = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false,
+                cloudKitDatabase: .none
+            )
+            #else
+            // For real devices: enable CloudKit syncing
             let modelConfiguration = ModelConfiguration(
                 schema: schema,
                 isStoredInMemoryOnly: false,
                 cloudKitDatabase: .automatic
             )
+            #endif
 
             modelContainer = try ModelContainer(
                 for: schema,
