@@ -4,6 +4,7 @@ import SwiftData
 @main
 struct SpoolOfRockApp: App {
     let modelContainer: ModelContainer
+    let spoolRepository: SpoolRepository
 
     init() {
         do {
@@ -31,6 +32,13 @@ struct SpoolOfRockApp: App {
                 for: schema,
                 configurations: [modelConfiguration]
             )
+
+            // Create repository with SwiftData implementation
+            let implementation = SwiftDataSpoolRepository(
+                modelContext: modelContainer.mainContext
+            )
+            spoolRepository = SpoolRepository(implementation: implementation)
+
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
@@ -39,6 +47,7 @@ struct SpoolOfRockApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .spoolRepository(spoolRepository)
         }
         .modelContainer(modelContainer)
     }

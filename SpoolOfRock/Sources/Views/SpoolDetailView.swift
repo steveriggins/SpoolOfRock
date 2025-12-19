@@ -1,23 +1,45 @@
 import SwiftUI
-import SwiftData
 
 struct SpoolDetailView: View {
-    @Bindable var spool: Spool
+    @Environment(\.spoolRepository) private var repository
+    @State private var viewModel: SpoolDetailViewModel?
+
+    let spool: Spool
+
+    var body: some View {
+        Group {
+            if let viewModel = viewModel {
+                DetailContent(viewModel: viewModel)
+            }
+        }
+        .onAppear {
+            if let repository = repository, viewModel == nil {
+                viewModel = SpoolDetailViewModel(spool: spool, repository: repository)
+            }
+        }
+        .onDisappear {
+            viewModel?.save()
+        }
+    }
+}
+
+private struct DetailContent: View {
+    @Bindable var viewModel: SpoolDetailViewModel
 
     var body: some View {
         Form {
             Section("Information") {
-                LabeledContent("Manufacturer", value: spool.manufacturer)
-                LabeledContent("Type", value: spool.type.displayName)
+                LabeledContent("Manufacturer", value: viewModel.manufacturer)
+                LabeledContent("Type", value: viewModel.type.displayName)
             }
 
             Section("Weight") {
-                LabeledContent("Original", value: "\(Int(spool.originalWeight))g")
+                LabeledContent("Original", value: "\(Int(viewModel.originalWeight))g")
 
                 HStack {
                     Text("Current")
                     Spacer()
-                    TextField("Current", value: $spool.currentWeight, format: .number)
+                    TextField("Current", value: $viewModel.currentWeight, format: .number)
                         .keyboardType(.decimalPad)
                         .multilineTextAlignment(.trailing)
                     Text("g")
@@ -25,14 +47,14 @@ struct SpoolDetailView: View {
 
                 LabeledContent("Remaining") {
                     HStack {
-                        Text(String(format: "%.1f%%", spool.remainingPercentage))
-                        ProgressView(value: spool.remainingPercentage, total: 100)
+                        Text(String(format: "%.1f%%", viewModel.remainingPercentage))
+                        ProgressView(value: viewModel.remainingPercentage, total: 100)
                             .frame(width: 100)
                     }
                 }
             }
         }
-        .navigationTitle(spool.manufacturer)
+        .navigationTitle(viewModel.manufacturer)
         .navigationBarTitleDisplayMode(.inline)
     }
 }

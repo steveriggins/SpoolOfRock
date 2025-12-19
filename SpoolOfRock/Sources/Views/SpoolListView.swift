@@ -1,10 +1,12 @@
 import SwiftUI
-import SwiftData
 
 struct SpoolListView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Spool.createdAt, order: .reverse) private var spools: [Spool]
+    @Environment(\.spoolRepository) private var repository
     @State private var showingAddSpool = false
+
+    private var spools: [Spool] {
+        repository?.spools ?? []
+    }
 
     var body: some View {
         NavigationStack {
@@ -40,8 +42,6 @@ struct SpoolListView: View {
     }
 
     private func deleteSpools(offsets: IndexSet) {
-        for index in offsets {
-            modelContext.delete(spools[index])
-        }
+        repository?.delete(at: offsets)
     }
 }

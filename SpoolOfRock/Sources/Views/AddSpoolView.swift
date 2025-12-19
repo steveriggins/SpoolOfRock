@@ -1,8 +1,7 @@
 import SwiftUI
-import SwiftData
 
 struct AddSpoolView: View {
-    @Environment(\.modelContext) private var modelContext
+    @Environment(\.spoolRepository) private var repository
     @Environment(\.dismiss) private var dismiss
 
     @State private var manufacturer = ""
@@ -66,7 +65,7 @@ struct AddSpoolView: View {
             currentWeight: current
         )
 
-        modelContext.insert(newSpool)
+        repository?.add(newSpool)
         dismiss()
     }
 }
