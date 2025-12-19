@@ -28,6 +28,10 @@ final class InMemorySpoolRepository: SpoolRepositoryProtocol {
     func fetchAll() async throws -> [Spool] {
         return spools
     }
+
+    func findByNFCTag(_ tagID: String) async throws -> Spool? {
+        return spools.first { $0.nfcTagIdentifier == tagID }
+    }
 }
 
 enum RepositoryError: Error {

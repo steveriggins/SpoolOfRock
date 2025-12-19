@@ -5,9 +5,11 @@ import SwiftData
 struct SpoolOfRockApp: App {
     let modelContainer: ModelContainer
     let spoolRepository: SpoolRepository
+    let nfcManager: NFCManager
 
     init() {
         do {
+            // Schema with models - SwiftData handles lightweight migration automatically
             let schema = Schema([
                 Spool.self,
             ])
@@ -39,6 +41,15 @@ struct SpoolOfRockApp: App {
             )
             spoolRepository = SpoolRepository(implementation: implementation)
 
+            // Create NFC service based on environment
+            #if targetEnvironment(simulator)
+            let nfcService: NFCServiceProtocol = MockNFCService()
+            #else
+            let nfcService: NFCServiceProtocol = CoreNFCService()
+            #endif
+
+            nfcManager = NFCManager(service: nfcService, repository: spoolRepository)
+
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
@@ -48,6 +59,7 @@ struct SpoolOfRockApp: App {
         WindowGroup {
             ContentView()
                 .spoolRepository(spoolRepository)
+                .nfcManager(nfcManager)
         }
         .modelContainer(modelContainer)
     }

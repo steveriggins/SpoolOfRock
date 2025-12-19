@@ -17,4 +17,7 @@ protocol SpoolRepositoryProtocol {
 
     /// Fetch all spools from the data source
     func fetchAll() async throws -> [Spool]
+
+    /// Find spool by NFC tag identifier
+    func findByNFCTag(_ tagID: String) async throws -> Spool?
 }

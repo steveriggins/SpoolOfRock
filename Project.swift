@@ -10,7 +10,8 @@ let project = Project(
             bundleId: "com.spoolofrock.app",
             infoPlist: .extendingDefault(
                 with: [
-                    "UILaunchScreen": [:]
+                    "UILaunchScreen": [:],
+                    "NFCReaderUsageDescription": "SpoolOfRock uses NFC to identify and track your filament spools"
                 ]
             ),
             sources: ["SpoolOfRock/Sources/**"],

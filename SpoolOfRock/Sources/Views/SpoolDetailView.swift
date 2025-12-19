@@ -31,6 +31,8 @@ private struct DetailContentContainer: View {
 
 private struct DetailContent: View {
     @Bindable var viewModel: SpoolDetailViewModel
+    @Environment(\.nfcManager) private var nfcManager
+    @State private var showingError = false
 
     var body: some View {
         Form {
@@ -60,8 +62,58 @@ private struct DetailContent: View {
                     }
                 }
             }
+
+            if let nfcManager = nfcManager {
+                Section("NFC Tag") {
+                    if nfcManager.isNFCAvailable {
+                        if viewModel.spool.nfcTagIdentifier != nil {
+                            HStack {
+                                Label("Tag Assigned", systemImage: "checkmark.circle.fill")
+                                    .foregroundStyle(.green)
+                                Spacer()
+                                Button("Remove", role: .destructive) {
+                                    nfcManager.removeTagFromSpool(viewModel.spool)
+                                }
+                                .buttonStyle(.bordered)
+                            }
+                        }
+
+                        Button {
+                            Task {
+                                let success = await nfcManager.writeTagForSpool(viewModel.spool)
+                                if !success && nfcManager.error != nil {
+                                    showingError = true
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                Label(
+                                    viewModel.spool.nfcTagIdentifier == nil ? "Assign NFC Tag" : "Reassign NFC Tag",
+                                    systemImage: "wave.3.right"
+                                )
+                                if nfcManager.isWriting {
+                                    Spacer()
+                                    ProgressView()
+                                }
+                            }
+                        }
+                        .disabled(nfcManager.isWriting)
+                    } else {
+                        Text("NFC not available on this device")
+                            .foregroundStyle(.secondary)
+                            .font(.caption)
+                    }
+                }
+            }
         }
         .navigationTitle(viewModel.manufacturer)
         .navigationBarTitleDisplayMode(.inline)
+        .alert("NFC Error", isPresented: $showingError, presenting: nfcManager?.error) { _ in
+            Button("OK") {
+                nfcManager?.clearError()
+            }
+        } message: { error in
+            Text(error.localizedDescription)
+        }
     }
 }

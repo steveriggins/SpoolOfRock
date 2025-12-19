@@ -10,6 +10,7 @@ final class Spool {
     var originalWeight: Double // in grams
     var currentWeight: Double // in grams
     var createdAt: Date
+    var nfcTagIdentifier: String? = nil
 
     init(manufacturer: String, type: FilamentType, color: String, originalWeight: Double, currentWeight: Double) {
         self.id = UUID()

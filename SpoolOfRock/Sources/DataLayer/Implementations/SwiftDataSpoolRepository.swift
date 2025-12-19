@@ -42,6 +42,17 @@ final class SwiftDataSpoolRepository: SpoolRepositoryProtocol {
         return try modelContext.fetch(descriptor)
     }
 
+    func findByNFCTag(_ tagID: String) async throws -> Spool? {
+        var descriptor = FetchDescriptor<Spool>(
+            predicate: #Predicate { spool in
+                spool.nfcTagIdentifier == tagID
+            }
+        )
+        descriptor.fetchLimit = 1
+        let results = try modelContext.fetch(descriptor)
+        return results.first
+    }
+
     private func refreshSpools() async throws {
         spools = try await fetchAll()
     }
