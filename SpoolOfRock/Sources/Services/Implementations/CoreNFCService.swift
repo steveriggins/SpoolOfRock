@@ -35,13 +35,13 @@ final class CoreNFCService: NSObject, NFCServiceProtocol {
             }
             backgroundTagHandler = nil
 
+            let configuration = NFCTagReaderSession.Configuration(pollingOption: .iso14443)
             let session = NFCTagReaderSession(
-                pollingOption: .iso14443,
-                delegate: self,
-                queue: nil
+                configuration: configuration,
+                delegate: self
             )
-            session?.alertMessage = "Hold your iPhone near the NFC tag"
-            session?.begin()
+            session.alertMessage = "Hold your iPhone near the NFC tag"
+            session.begin()
             self.tagReadSession = session
         }
     }
@@ -62,13 +62,13 @@ final class CoreNFCService: NSObject, NFCServiceProtocol {
             }
             backgroundTagHandler = nil
 
+            let configuration = NFCTagReaderSession.Configuration(pollingOption: .iso14443)
             let session = NFCTagReaderSession(
-                pollingOption: .iso14443,
-                delegate: self,
-                queue: nil
+                configuration: configuration,
+                delegate: self
             )
-            session?.alertMessage = "Hold your iPhone near the NFC tag to write"
-            session?.begin()
+            session.alertMessage = "Hold your iPhone near the NFC tag to write"
+            session.begin()
             self.writeSession = session
         }
     }
