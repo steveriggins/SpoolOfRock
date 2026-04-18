@@ -36,6 +36,21 @@ SpoolOfRock is an iOS app for tracking 3D printer filament spools, with NFC supp
 - CoreNFC
 - Tuist project structure
 
+## Tuist
+
+For Tuist documentation and guides, see:
+
+- https://docs.tuist.dev/
+
+To generate the Xcode workspace/project from this repo:
+
+1. Install Tuist and project tools:
+   - `tuist install`
+2. Generate the workspace/project:
+   - `tuist generate`
+3. Open the generated workspace in Xcode:
+   - `open SpoolOfRock.xcworkspace`
+
 ## Project Structure (high level)
 
 - `SpoolOfRock/Sources/Models` - domain models
