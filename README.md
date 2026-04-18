@@ -87,4 +87,6 @@ SpoolOfRock is an iOS app for tracking 3D printer filament spools, with NFC supp
 
 ## License
 
-No license has been specified yet.
+This project is licensed under **PolyForm Noncommercial 1.0.0**.
+
+See the [LICENSE](LICENSE) file for the full text and terms.
