@@ -2,6 +2,14 @@ import ProjectDescription
 
 let project = Project(
     name: "SpoolOfRock",
+    settings: .settings(
+        base: [
+            "ENABLE_USER_SCRIPT_SANDBOXING": "YES",
+            "ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS": "YES",
+            "ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS": "YES",
+            "STRING_CATALOG_GENERATE_SYMBOLS": "YES"
+        ]
+    ),
     targets: [
         .target(
             name: "SpoolOfRock",
