@@ -1,5 +1,7 @@
 import ProjectDescription
 
 let config = Config(
-    generationOptions: .options()
+    generationOptions: .options(
+        includeGenerateScheme: false
+    )
 )

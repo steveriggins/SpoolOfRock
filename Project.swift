@@ -5,7 +5,7 @@ let project = Project(
     targets: [
         .target(
             name: "SpoolOfRock",
-            destinations: .iOS,
+            destinations: [.iPhone, .iPad],
             product: .app,
             bundleId: "com.spoolofrock.app",
             infoPlist: .extendingDefault(
@@ -21,13 +21,15 @@ let project = Project(
             dependencies: [],
             settings: .settings(
                 base: [
-                    "DEVELOPMENT_TEAM": "[TEAM_ID]"
+                    "DEVELOPMENT_TEAM": "[TEAM_ID]",
+                    "SUPPORTS_MACCATALYST": "NO",
+                    "SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD": "NO"
                 ]
             )
         ),
         .target(
             name: "SpoolOfRockTests",
-            destinations: .iOS,
+            destinations: [.iPhone, .iPad],
             product: .unitTests,
             bundleId: "com.spoolofrock.app.tests",
             infoPlist: .default,
