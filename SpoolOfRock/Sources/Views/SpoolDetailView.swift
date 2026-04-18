@@ -32,7 +32,7 @@ private struct DetailContentContainer: View {
 private struct DetailContent: View {
     @Bindable var viewModel: SpoolDetailViewModel
     @Environment(\.nfcManager) private var nfcManager
-    @State private var showingError = false
+    @State private var activeAlert: DetailAlert?
 
     var body: some View {
         Form {
@@ -79,25 +79,20 @@ private struct DetailContent: View {
                         }
 
                         Button {
-                            Task {
-                                let success = await nfcManager.writeTagForSpool(viewModel.spool)
-                                if !success && nfcManager.error != nil {
-                                    showingError = true
-                                }
-                            }
+                            beginTagAssignmentFlow()
                         } label: {
                             HStack {
                                 Label(
                                     viewModel.spool.nfcTagIdentifier == nil ? "Assign NFC Tag" : "Reassign NFC Tag",
                                     systemImage: "wave.3.right"
                                 )
-                                if nfcManager.isWriting {
+                                if nfcManager.isWriting || nfcManager.isReading {
                                     Spacer()
                                     ProgressView()
                                 }
                             }
                         }
-                        .disabled(nfcManager.isWriting)
+                        .disabled(nfcManager.isWriting || nfcManager.isReading)
                     } else {
                         Text("NFC not available on this device")
                             .foregroundStyle(.secondary)
@@ -108,12 +103,75 @@ private struct DetailContent: View {
         }
         .navigationTitle(viewModel.manufacturer)
         .navigationBarTitleDisplayMode(.inline)
-        .alert("NFC Error", isPresented: $showingError, presenting: nfcManager?.error) { _ in
-            Button("OK") {
-                nfcManager?.clearError()
+        .alert(item: $activeAlert) { alert in
+            switch alert {
+            case .nfcError(let message):
+                return Alert(
+                    title: Text("NFC Error"),
+                    message: Text(message),
+                    dismissButton: .default(Text("OK")) {
+                        nfcManager?.clearError()
+                    }
+                )
+            case .tagInUse(let spool):
+                return Alert(
+                    title: Text("Tag Already In Use"),
+                    message: Text("This tag is currently assigned to \(spool.manufacturer). Reassign it to this spool?"),
+                    primaryButton: .destructive(Text("Reassign")) {
+                        Task {
+                            guard let nfcManager else { return }
+                            nfcManager.removeTagFromSpool(spool)
+                            await writeTagToCurrentSpool(with: nfcManager)
+                        }
+                    },
+                    secondaryButton: .cancel()
+                )
             }
-        } message: { error in
-            Text(error.localizedDescription)
+        }
+    }
+
+    private func beginTagAssignmentFlow() {
+        guard let nfcManager else { return }
+
+        Task {
+            guard let scannedTagID = await nfcManager.readTag() else {
+                showNFCErrorIfAvailable()
+                return
+            }
+
+            if let existingSpool = nfcManager.findSpool(for: scannedTagID), existingSpool.id != viewModel.spool.id {
+                activeAlert = .tagInUse(existingSpool)
+                return
+            }
+
+            await writeTagToCurrentSpool(with: nfcManager)
+        }
+    }
+
+    private func writeTagToCurrentSpool(with nfcManager: NFCManager) async {
+        let success = await nfcManager.writeTagForSpool(viewModel.spool)
+        if !success {
+            showNFCErrorIfAvailable()
+        }
+    }
+
+    private func showNFCErrorIfAvailable() {
+        if let error = nfcManager?.error {
+            activeAlert = .nfcError(error.localizedDescription)
+        }
+    }
+}
+
+private enum DetailAlert: Identifiable {
+    case nfcError(String)
+    case tagInUse(Spool)
+
+    var id: String {
+        switch self {
+        case .nfcError(let message):
+            return "nfcError-\(message)"
+        case .tagInUse(let spool):
+            return "tagInUse-\(spool.id.uuidString)"
         }
     }
 }
