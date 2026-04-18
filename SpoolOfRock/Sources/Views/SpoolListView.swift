@@ -3,11 +3,9 @@ import SwiftUI
 struct SpoolListView: View {
     @Environment(\.spoolRepository) private var repository
     @Environment(\.nfcManager) private var nfcManager
+
     @State private var showingAddSpool = false
     @State private var navigationPath = NavigationPath()
-    @State private var showingUnknownTagAlert = false
-    @State private var scannedUnknownTagID: UUID?
-    @State private var isBackgroundReadingActive = false
 
     private var spools: [Spool] {
         repository?.spools ?? []
@@ -16,68 +14,61 @@ struct SpoolListView: View {
     var body: some View {
         NavigationStack(path: $navigationPath) {
             List {
-                ForEach(spools) { spool in
-                    NavigationLink(value: spool) {
-                        SpoolRowView(spool: spool)
+                Section {
+                    VStack(spacing: 12) {
+                        ActionCardButton(
+                            title: "Scan Spool",
+                            subtitle: "Scan an NFC tag to open its spool",
+                            systemImage: "wave.3.right.circle.fill",
+                            tint: .blue,
+                            isLoading: nfcManager?.isReading ?? false,
+                            action: startScan
+                        )
+
+                        ActionCardButton(
+                            title: "Add Spool",
+                            subtitle: "Create a new spool entry",
+                            systemImage: "plus.circle.fill",
+                            tint: .green,
+                            isLoading: false,
+                            action: { showingAddSpool = true }
+                        )
+                    }
+                    .padding(.vertical, 4)
+                }
+                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+
+                if spools.isEmpty {
+                    Section {
+                        ContentUnavailableView(
+                            "No Spools",
+                            systemImage: "cylinder.fill",
+                            description: Text("Use Add Spool to create your first entry")
+                        )
+                        .frame(maxWidth: .infinity)
+                    }
+                } else {
+                    Section("My Spools") {
+                        ForEach(spools) { spool in
+                            NavigationLink(value: spool) {
+                                SpoolRowView(spool: spool)
+                            }
+                        }
+                        .onDelete(perform: deleteSpools)
                     }
                 }
-                .onDelete(perform: deleteSpools)
             }
             .navigationDestination(for: Spool.self) { spool in
                 SpoolDetailView(spool: spool)
             }
-            .navigationTitle("My Spools")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingAddSpool = true }) {
-                        Label("Add Spool", systemImage: "plus")
-                    }
-                }
-            }
-            .sheet(isPresented: $showingAddSpool) {
-                AddSpoolView()
-            }
-            .onChange(of: showingAddSpool) { _, isShowing in
-                if isShowing {
-                    // Pause background reading when Add Spool sheet appears
-                    nfcManager?.stopBackgroundReading()
-                    isBackgroundReadingActive = false
-                } else {
-                    // Resume background reading when sheet is dismissed
-                    if !isBackgroundReadingActive {
-                        startBackgroundNFCReading()
-                        isBackgroundReadingActive = true
-                    }
-                }
-            }
-            .overlay {
-                if spools.isEmpty {
-                    ContentUnavailableView(
-                        "No Spools",
-                        systemImage: "cylinder.fill",
-                        description: Text("Tap + to add your first spool")
-                    )
-                }
-            }
-            .onAppear {
-                if !isBackgroundReadingActive {
-                    startBackgroundNFCReading()
-                    isBackgroundReadingActive = true
-                }
-            }
-            .onDisappear {
-                nfcManager?.stopBackgroundReading()
-                isBackgroundReadingActive = false
-            }
-            .alert("Unknown NFC Tag", isPresented: $showingUnknownTagAlert) {
-                Button("Create New Spool") {
+            .navigationDestination(for: ScanResultState.self) { state in
+                ScanResultView(state: state) {
                     showingAddSpool = true
                 }
-                Button("Cancel", role: .cancel) {
-                    scannedUnknownTagID = nil
-                }
-            } message: {
-                Text("This NFC tag is not associated with any spool. Would you like to create a new spool?")
+            }
+            .navigationTitle("Spool of Rock")
+            .sheet(isPresented: $showingAddSpool) {
+                AddSpoolView()
             }
         }
     }
@@ -86,19 +77,72 @@ struct SpoolListView: View {
         repository?.delete(at: offsets)
     }
 
-    private func startBackgroundNFCReading() {
-        guard let nfcManager = nfcManager else { return }
+    private func startScan() {
+        guard let nfcManager else { return }
 
-        nfcManager.startBackgroundReading { tagID in
-            // Find spool with this NFC tag ID
-            if let spool = repository?.spools.first(where: { $0.nfcTagIdentifier == tagID.uuidString }) {
-                // Navigate to the spool's detail view
+        Task {
+            guard let tagID = await nfcManager.readTag() else {
+                if let error = nfcManager.error {
+                    navigationPath.append(ScanResultState.nfcError(error.localizedDescription))
+                }
+                return
+            }
+
+            if let spool = nfcManager.findSpool(for: tagID) {
                 navigationPath.append(spool)
             } else {
-                // Unknown tag - offer to create new spool
-                scannedUnknownTagID = tagID
-                showingUnknownTagAlert = true
+                navigationPath.append(ScanResultState.unknownTag)
             }
         }
+    }
+}
+
+private struct ActionCardButton: View {
+    let title: String
+    let subtitle: String
+    let systemImage: String
+    let tint: Color
+    let isLoading: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                Image(systemName: systemImage)
+                    .font(.title2)
+                    .foregroundStyle(tint)
+                    .frame(width: 30)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                if isLoading {
+                    ProgressView()
+                } else {
+                    Image(systemName: "chevron.right")
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(tint.opacity(0.10))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(tint.opacity(0.25), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(title)
     }
 }

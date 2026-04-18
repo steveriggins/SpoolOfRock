@@ -12,12 +12,4 @@ final class MockNFCService: NFCServiceProtocol {
     func writeTag(spoolID: UUID) async throws {
         throw NFCError.notSupported
     }
-
-    func startBackgroundReading(onTagDetected: @escaping (UUID) -> Void) {
-        // No-op on simulator
-    }
-
-    func stopBackgroundReading() {
-        // No-op on simulator
-    }
 }

@@ -33,10 +33,4 @@ protocol NFCServiceProtocol {
 
     /// Write a spool UUID to an NFC tag
     func writeTag(spoolID: UUID) async throws
-
-    /// Start background tag reading (only on real devices)
-    func startBackgroundReading(onTagDetected: @escaping (UUID) -> Void)
-
-    /// Stop background tag reading
-    func stopBackgroundReading()
 }

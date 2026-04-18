@@ -52,8 +52,13 @@ final class NFCManager {
             return nil
         }
 
-        // Find spool with this NFC tag ID
-        return repository.spools.first { $0.nfcTagIdentifier == tagID.uuidString }
+        return findSpool(for: tagID)
+    }
+
+    func findSpool(for tagID: UUID) -> Spool? {
+        repository.spools.first {
+            $0.id == tagID || $0.nfcTagIdentifier == tagID.uuidString
+        }
     }
 
     /// Write spool ID to tag and update spool record
@@ -68,7 +73,7 @@ final class NFCManager {
 
         do {
             try await service.writeTag(spoolID: spool.id)
-            // Update spool with tag identifier
+            // Keep this for backward compatibility with existing data and lookups.
             spool.nfcTagIdentifier = spool.id.uuidString
             repository.update(spool)
             error = nil
@@ -91,16 +96,6 @@ final class NFCManager {
     func removeTagFromSpool(_ spool: Spool) {
         spool.nfcTagIdentifier = nil
         repository.update(spool)
-    }
-
-    /// Start background tag reading
-    func startBackgroundReading(onTagDetected: @escaping (UUID) -> Void) {
-        service.startBackgroundReading(onTagDetected: onTagDetected)
-    }
-
-    /// Stop background tag reading
-    func stopBackgroundReading() {
-        service.stopBackgroundReading()
     }
 
     /// Clear error state
