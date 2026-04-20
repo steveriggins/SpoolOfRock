@@ -20,10 +20,8 @@ final class SpoolRepository {
     func add(_ spool: Spool) {
         do {
             try implementation.add(spool)
+            spools = implementation.spools
             error = nil
-            Task {
-                await refreshSpools()
-            }
         } catch {
             self.error = error
         }
@@ -32,10 +30,8 @@ final class SpoolRepository {
     func update(_ spool: Spool) {
         do {
             try implementation.update(spool)
+            spools = implementation.spools
             error = nil
-            Task {
-                await refreshSpools()
-            }
         } catch {
             self.error = error
         }
@@ -44,18 +40,23 @@ final class SpoolRepository {
     func delete(_ spool: Spool) {
         do {
             try implementation.delete(spool)
+            spools = implementation.spools
             error = nil
-            Task {
-                await refreshSpools()
-            }
         } catch {
             self.error = error
         }
     }
 
     func delete(at offsets: IndexSet) {
-        for index in offsets {
-            delete(spools[index])
+        do {
+            let spoolsToDelete = offsets.map { spools[$0] }
+            for spool in spoolsToDelete {
+                try implementation.delete(spool)
+            }
+            spools = implementation.spools
+            error = nil
+        } catch {
+            self.error = error
         }
     }
 

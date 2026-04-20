@@ -49,7 +49,7 @@ struct SpoolListView: View {
                     }
                 } else {
                     Section("My Spools") {
-                        ForEach(spools) { spool in
+                        ForEach(spools, id: \.id) { spool in
                             NavigationLink(value: spool) {
                                 SpoolRowView(spool: spool)
                             }

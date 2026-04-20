@@ -32,7 +32,9 @@ private struct DetailContentContainer: View {
 private struct DetailContent: View {
     @Bindable var viewModel: SpoolDetailViewModel
     @Environment(\.nfcManager) private var nfcManager
+    @Environment(\.dismiss) private var dismiss
     @State private var activeAlert: DetailAlert?
+    @State private var showingDeleteConfirmation = false
 
     var body: some View {
         Form {
@@ -100,9 +102,24 @@ private struct DetailContent: View {
                     }
                 }
             }
+
+            Section {
+                Button("Delete Spool", role: .destructive) {
+                    showingDeleteConfirmation = true
+                }
+            }
         }
         .navigationTitle(viewModel.manufacturer)
         .navigationBarTitleDisplayMode(.inline)
+        .alert("Delete this spool?", isPresented: $showingDeleteConfirmation) {
+            Button("Delete Spool", role: .destructive) {
+                viewModel.deleteSpool()
+                dismiss()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This action cannot be undone.")
+        }
         .alert(item: $activeAlert) { alert in
             switch alert {
             case .nfcError(let message):

@@ -6,6 +6,7 @@ import Observation
 @MainActor
 final class SpoolDetailViewModel {
     var currentWeight: Double
+    private(set) var isDeleted = false
 
     let spool: Spool
     private let repository: SpoolRepository
@@ -27,7 +28,13 @@ final class SpoolDetailViewModel {
     }
 
     func save() {
+        guard !isDeleted else { return }
         spool.currentWeight = currentWeight
         repository.update(spool)
+    }
+
+    func deleteSpool() {
+        repository.delete(spool)
+        isDeleted = true
     }
 }

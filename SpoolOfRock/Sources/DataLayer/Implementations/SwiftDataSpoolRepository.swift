@@ -9,30 +9,25 @@ final class SwiftDataSpoolRepository: SpoolRepositoryProtocol {
 
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
+        try? refreshCachedSpools()
     }
 
     func add(_ spool: Spool) throws {
         modelContext.insert(spool)
         try modelContext.save()
-        Task {
-            try? await refreshSpools()
-        }
+        try refreshCachedSpools()
     }
 
     func update(_ spool: Spool) throws {
         // SwiftData tracks changes automatically
         try modelContext.save()
-        Task {
-            try? await refreshSpools()
-        }
+        try refreshCachedSpools()
     }
 
     func delete(_ spool: Spool) throws {
         modelContext.delete(spool)
         try modelContext.save()
-        Task {
-            try? await refreshSpools()
-        }
+        try refreshCachedSpools()
     }
 
     func fetchAll() async throws -> [Spool] {
@@ -53,7 +48,10 @@ final class SwiftDataSpoolRepository: SpoolRepositoryProtocol {
         return results.first
     }
 
-    private func refreshSpools() async throws {
-        spools = try await fetchAll()
+    private func refreshCachedSpools() throws {
+        let descriptor = FetchDescriptor<Spool>(
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+        )
+        spools = try modelContext.fetch(descriptor)
     }
 }
